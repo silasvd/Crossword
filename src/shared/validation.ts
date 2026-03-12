@@ -94,7 +94,6 @@ function hasAdjacentTile(board: BoardCell[][], x: number, y: number, newPlacemen
     const ny = y + dy;
     if (nx < 0 || nx >= BOARD_SIZE || ny < 0 || ny >= BOARD_SIZE) continue;
     if (board[ny][nx].tile !== null) return true;
-    // Adjacent to another newly placed tile (for connectivity check vs. board)
   }
   return false;
 }

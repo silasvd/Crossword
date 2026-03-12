@@ -1,7 +1,6 @@
 import QRCode from 'qrcode';
 import { Html5Qrcode } from 'html5-qrcode';
 import type { QRPayload } from '../../shared/types';
-import { decompressSDP } from '../../shared/compression';
 
 export interface PairingSlot {
   index: number;

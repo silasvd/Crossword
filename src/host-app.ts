@@ -45,7 +45,10 @@ function showHostStartScreen(app: HTMLElement, hasSaved: boolean): void {
 }
 
 async function resumeGame(app: HTMLElement): Promise<void> {
-  const engine = new HostEngine(() => refreshHostUI(app, engine));
+  const engine = new HostEngine(() => {
+    refreshHostUI(app, engine);
+    updateStartButton(app, engine);
+  });
   const resumed = await engine.resumeGame();
   if (!resumed) {
     alert('Kein gespeichertes Spiel gefunden.');
@@ -83,9 +86,19 @@ function startNewGame(app: HTMLElement): void {
 }
 
 function setupGame(app: HTMLElement, playerCount: number): void {
-  const engine = new HostEngine(() => refreshHostUI(app, engine));
+  const engine = new HostEngine(() => {
+    refreshHostUI(app, engine);
+    updateStartButton(app, engine);
+  });
   engine.createNewGame();
   showPairingScreen(app, engine, playerCount);
+}
+
+function updateStartButton(app: HTMLElement, engine: HostEngine): void {
+  const startBtn = app.querySelector('.start-game-btn') as HTMLButtonElement | null;
+  if (startBtn) {
+    startBtn.disabled = engine.state.players.length === 0;
+  }
 }
 
 async function showPairingScreen(app: HTMLElement, engine: HostEngine, expectedPlayers?: number): Promise<void> {
@@ -105,6 +118,9 @@ async function showPairingScreen(app: HTMLElement, engine: HostEngine, expectedP
 
   renderPairingUI(app, slots, (slotIndex) => {
     startScanningAnswer(app, engine, slots, slotIndex);
+  }, () => {
+    engine.webrtc.closeAll();
+    startNewGame(app);
   });
 
   // Render QR codes for each slot
@@ -121,11 +137,13 @@ async function showPairingScreen(app: HTMLElement, engine: HostEngine, expectedP
     const startBtn = document.createElement('button');
     startBtn.className = 'btn btn-primary start-game-btn';
     startBtn.textContent = '▶️ Spiel starten';
+    startBtn.disabled = engine.state.players.length === 0;
     startBtn.addEventListener('click', () => {
+      if (engine.state.players.length === 0) return;
       engine.startGame();
       showGameScreen(app, engine);
     });
-    pairingDiv.appendChild(startBtn);
+    pairingDiv.insertBefore(startBtn, pairingDiv.querySelector('.btn-back') ?? null);
   }
 
   // Listen for connection changes to update pairing UI

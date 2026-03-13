@@ -139,7 +139,6 @@ async function showPairingScreen(app: HTMLElement, engine: HostEngine, expectedP
     startBtn.textContent = '▶️ Spiel starten';
     startBtn.disabled = engine.state.players.length === 0;
     startBtn.addEventListener('click', () => {
-      if (engine.state.players.length === 0) return;
       engine.startGame();
       showGameScreen(app, engine);
     });

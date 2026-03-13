@@ -1,6 +1,33 @@
 import './style.css';
+import { registerSW } from 'virtual:pwa-register';
 import { initHost } from './host-app';
 import { initPlayer } from './player-app';
+
+// Register the service worker. With registerType:'autoUpdate' the SW already
+// calls skipWaiting() automatically, which triggers a controllerchange event
+// that reloads the page. The onRegisteredSW hook adds a periodic re-check so
+// that long-running sessions (e.g. a game left open for hours) also pick up a
+// new deployment without the user having to manually reload.
+registerSW({
+  immediate: true,
+  onRegisteredSW(swUrl, registration) {
+    if (!registration) return;
+    const CHECK_INTERVAL_MS = 60 * 60 * 1000; // 1 hour
+    setInterval(async () => {
+      if (registration.installing) return; // already updating
+      if (!navigator.onLine) return; // no network
+      try {
+        const resp = await fetch(swUrl, {
+          cache: 'no-store',
+          headers: { 'cache-control': 'no-cache' },
+        });
+        if (resp.status === 200) {
+          await registration.update();
+        }
+      } catch { /* ignore network errors during background check */ }
+    }, CHECK_INTERVAL_MS);
+  },
+});
 
 function showModeSelect(app: HTMLElement): void {
   app.innerHTML = `

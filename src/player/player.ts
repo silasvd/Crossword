@@ -8,6 +8,7 @@ import {
 import { renderActions, renderStatusBar } from './ui/actions';
 import {
   renderPlayerPairingUI,
+  stopOfferScanner,
   startOfferScanner,
   displayAnswerQR
 } from './ui/pairing';
@@ -70,8 +71,14 @@ export class PlayerClient {
             value="${escapeHtml(this.savedPlayerName ?? '')}" maxlength="20" />
         </div>
         <button class="btn btn-primary" id="btn-join">📷 Spiel beitreten</button>
+        <button class="btn btn-back" id="btn-back">← Zurück</button>
       </div>
     `;
+
+    document.getElementById('btn-back')?.addEventListener('click', () => {
+      localStorage.removeItem('cwMode');
+      location.reload();
+    });
 
     document.getElementById('btn-join')?.addEventListener('click', () => {
       const nameInput = document.getElementById('player-name') as HTMLInputElement;
@@ -84,7 +91,9 @@ export class PlayerClient {
   }
 
   private showPairingScreen(): void {
-    renderPlayerPairingUI(this.appContainer, 'scan-offer');
+    renderPlayerPairingUI(this.appContainer, 'scan-offer', () => {
+      stopOfferScanner().catch(() => { /* ignore stop errors */ }).then(() => this.showJoinScreen());
+    });
 
     // Start the QR scanner after DOM is rendered
     setTimeout(() => {
@@ -129,7 +138,10 @@ export class PlayerClient {
             playerName: this.savedPlayerName ?? 'Spieler',
           });
         }
-        renderPlayerPairingUI(this.appContainer, 'connected');
+        renderPlayerPairingUI(this.appContainer, 'connected', () => {
+          this.webrtc.disconnect();
+          this.showJoinScreen();
+        });
       } else if (state === 'disconnected') {
         this.showDisconnected();
       }

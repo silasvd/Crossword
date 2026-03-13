@@ -56,7 +56,8 @@ export async function stopScanner(): Promise<void> {
 export function renderPairingUI(
   container: HTMLElement,
   slots: PairingSlot[],
-  onScanAnswer: (slotIndex: number) => void
+  onScanAnswer: (slotIndex: number) => void,
+  onBack?: () => void
 ): void {
   container.innerHTML = `
     <div class="pairing-ui">
@@ -90,4 +91,15 @@ export function renderPairingUI(
       onScanAnswer(idx);
     });
   });
+
+  if (onBack) {
+    const pairingDiv = container.querySelector('.pairing-ui');
+    if (pairingDiv) {
+      const backBtn = document.createElement('button');
+      backBtn.className = 'btn btn-back';
+      backBtn.textContent = '← Zurück';
+      backBtn.addEventListener('click', onBack);
+      pairingDiv.appendChild(backBtn);
+    }
+  }
 }

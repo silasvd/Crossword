@@ -141,7 +141,7 @@ export class HostEngine {
   }
 
   private handlePlayerJoin(peerId: string, playerName: string): void {
-    if (this.state.phase !== 'lobby') return;
+    if (this.state.phase === 'ended') return;
 
     const existing = this.state.players.find(p => p.id === peerId);
     if (existing) {

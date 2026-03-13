@@ -47,8 +47,16 @@ export async function displayAnswerQR(container: HTMLElement, payload: QRPayload
   await QRCode.toCanvas(canvas, jsonStr, { width: 280, errorCorrectionLevel: 'L' });
 }
 
-export function renderPlayerPairingUI(container: HTMLElement, step: 'scan-offer' | 'show-answer' | 'connected'): void {
+export function renderPlayerPairingUI(
+  container: HTMLElement,
+  step: 'scan-offer' | 'show-answer' | 'connected',
+  onBack?: () => void
+): void {
   container.innerHTML = '';
+
+  const backButtonHtml = onBack
+    ? '<button class="btn btn-back" id="pairing-back-btn">← Zurück</button>'
+    : '';
 
   if (step === 'scan-offer') {
     container.innerHTML = `
@@ -56,6 +64,7 @@ export function renderPlayerPairingUI(container: HTMLElement, step: 'scan-offer'
         <h2>Spiel beitreten</h2>
         <p>Scanne den QR-Code auf dem Host-Gerät</p>
         <div id="offer-scanner-container" class="scanner-container"></div>
+        ${backButtonHtml}
       </div>
     `;
   } else if (step === 'show-answer') {
@@ -65,6 +74,7 @@ export function renderPlayerPairingUI(container: HTMLElement, step: 'scan-offer'
         <p>Zeige diesen QR-Code dem Host</p>
         <div id="answer-qr-container" class="qr-container"></div>
         <p class="pairing-hint">Warte, bis der Host deinen Code gescannt hat…</p>
+        ${backButtonHtml}
       </div>
     `;
   } else {
@@ -72,7 +82,12 @@ export function renderPlayerPairingUI(container: HTMLElement, step: 'scan-offer'
       <div class="pairing-player connected">
         <h2>✅ Verbunden!</h2>
         <p>Warte auf Spielstart…</p>
+        ${backButtonHtml}
       </div>
     `;
+  }
+
+  if (onBack) {
+    document.getElementById('pairing-back-btn')?.addEventListener('click', onBack);
   }
 }
